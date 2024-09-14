@@ -1,0 +1,939 @@
+<html><head><base href="https://example.com/"><title>Space Invaders 2.0 - Estrellas de Poder</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #gameCanvas {
+        border: 2px solid #fff;
+    }
+    #gameInfo {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: #fff;
+        font-size: 18px;
+    }
+    #gameOver {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-size: 48px;
+        display: none;
+        text-align: center;
+    }
+    #restartButton {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 24px;
+        background-color: #00ff00;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    }
+    #restartButton:hover {
+        background-color: #00cc00;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+    }
+    #startContainer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #fff;
+    }
+    #startContainer h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    .difficulty-button {
+        padding: 10px 20px;
+        font-size: 20px;
+        background-color: #00ff00;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        margin: 10px;
+    }
+    .difficulty-button:hover {
+        background-color: #00cc00;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+    }
+    #gameControls {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    #pauseButton {
+        padding: 5px 10px;
+        font-size: 16px;
+        background-color: #00ff00;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        margin: 10px;
+    }
+    #pauseButton:hover {
+        background-color: #00cc00;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+    }
+    #gameHistory {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 250px;
+        height: 80vh;
+        overflow-y: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 10px;
+        border: 2px solid #00ff00;
+        border-radius: 5px;
+    }
+    #gameHistory h2 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    #historyList {
+        list-style-type: none;
+        padding: 0;
+    }
+    #historyList li {
+        margin-bottom: 10px;
+        padding: 5px;
+        background-color: rgba(0, 255, 0, 0.2);
+        border-radius: 3px;
+    }
+    @keyframes neonPulse {
+        0% {
+            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+        50% {
+            box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+        }
+        100% {
+            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+    }
+    .game-button {
+        animation: neonPulse 2s infinite;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+        background-color: #000;
+        margin: 15% auto;
+        padding: 20px;
+        border: 2px solid #00ff00;
+        width: 80%;
+        max-width: 500px;
+        color: #fff;
+        text-align: center;
+    }
+    .modal-content h3 {
+        margin-bottom: 10px;
+    }
+    .modal-content p {
+        margin-bottom: 20px;
+    }
+    #socialButtons {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        display: flex;
+        gap: 10px;
+    }
+    .social-button {
+        width: 40px;
+        height: 40px;
+        background-color: #00ff00;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    }
+    .social-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+    }
+    .social-button svg {
+        width: 24px;
+        height: 24px;
+        fill: #000;
+    }
+    #fullscreenContainer {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+    }
+    #fullscreenButton {
+        background-color: rgba(0, 255, 0, 0.5);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    }
+    #fullscreenButton:hover {
+        background-color: rgba(0, 255, 0, 0.7);
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00;
+    }
+    #fullscreenButton svg {
+        width: 24px;
+        height: 24px;
+        fill: #000;
+    }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="fullscreenContainer">
+    <button id="fullscreenButton" class="game-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/></svg>
+    </button>
+</div>
+<div id="gameInfo">
+    Lives: <span id="lives">3</span> | Score: <span id="score">0</span> | Level: <span id="level">1</span> | Disparadores: <span id="shooters">1</span>
+</div>
+<div id="gameOver">
+    GAME OVER
+    <br>
+    <button id="restartButton" class="game-button">Reiniciar</button>
+</div>
+<div id="startContainer">
+    <h2>Selecciona la dificultad</h2>
+    <button id="easyModalBtn" class="difficulty-button game-button">Modo Fácil</button>
+    <button id="hardModalBtn" class="difficulty-button game-button">Modo Difícil</button>
+    <button id="superHardModalBtn" class="difficulty-button game-button">Modo Super Difícil</button>
+</div>
+
+<!-- Easy Mode Modal -->
+<div id="easyModal" class="modal">
+    <div class="modal-content">
+        <h3>Modo Fácil</h3>
+        <p>En este modo, los enemigos solo bajan y no se mueven horizontalmente.</p>
+        <button id="easyButton" class="difficulty-button game-button">Jugar Modo Fácil</button>
+    </div>
+</div>
+
+<!-- Hard Mode Modal -->
+<div id="hardModal" class="modal">
+    <div class="modal-content">
+        <h3>Modo Difícil</h3>
+        <p>En este modo, los enemigos se mueven horizontalmente mientras bajan.</p>
+        <button id="hardButton" class="difficulty-button game-button">Jugar Modo Difícil</button>
+    </div>
+</div>
+
+<!-- Super Hard Mode Modal -->
+<div id="superHardModal" class="modal">
+    <div class="modal-content">
+        <h3>Modo Super Difícil</h3>
+        <p>En este modo, los enemigos se mueven y pueden esquivar tus proyectiles.</p>
+        <button id="superHardButton" class="difficulty-button game-button">Jugar Modo Super Difícil</button>
+    </div>
+</div>
+
+<div id="gameControls">
+    <button id="pauseButton" class="game-button">Pausar</button>
+</div>
+<div id="gameHistory">
+    <h2>Historial de Partidas</h2>
+    <ul id="historyList"></ul>
+</div>
+
+<div id="socialButtons">
+    <a href="https://t.me/youraccount" target="_blank" class="social-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.069l-2.035 9.592c-.152.715-.69.887-1.4.551l-3.867-2.851-1.866 1.796c-.206.206-.381.381-.781.381l.279-3.954 7.198-6.504c.313-.279-.069-.433-.484-.154l-8.897 5.6-3.831-1.196c-.833-.26-.848-.833.174-1.234l14.944-5.763c.693-.26 1.299.154 1.066 1.236z"/></svg>
+    </a>
+    <a href="https://twitter.com/youraccount" target="_blank" class="social-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+    </a>
+    <a href="https://www.youtube.com/yourchannel" target="_blank" class="social-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    </a>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const livesElement = document.getElementById('lives');
+const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
+const shootersElement = document.getElementById('shooters');
+const gameOverElement = document.getElementById('gameOver');
+const restartButton = document.getElementById('restartButton');
+const pauseButton = document.getElementById('pauseButton');
+const fullscreenButton = document.getElementById('fullscreenButton');
+
+let player, bullets, enemies, powerStars, particles, score, lives, level, shooters;
+let gameIsOver = false;
+let lastEnemySpawnTime = 0;
+let lastShootTime = 0;
+let enemiesKilled = 0;
+let gameState = 'notStarted'; 
+let gameHistory = [];
+let gameDifficulty = ''; 
+let isPaused = false; 
+
+let currentBulletColor = '#00ffff'; 
+
+const PLAYER_WIDTH = 60;
+const PLAYER_HEIGHT = 40;
+const BULLET_WIDTH = 5;
+const BULLET_HEIGHT = 15;
+const BULLET_SPEED = 7;
+const ENEMY_SPAWN_INTERVAL = 2000; 
+const SHOOT_COOLDOWN = 200; 
+const STAR_SIZE = 20;
+const STAR_SPEED = 2;
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * 6 - 3;
+        this.color = color;
+        this.life = 30;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life--;
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class Player {
+    constructor() {
+        this.width = 60; // Increased width for tank shape
+        this.height = 40; // Adjusted height for tank shape
+        this.x = canvas.width / 2 - this.width / 2;
+        this.y = canvas.height - this.height - 10;
+        this.speed = 8;
+        this.isMovingLeft = false;
+        this.isMovingRight = false;
+        this.isShooting = false;
+        this.color = '#00ff00'; // Tank body color
+        this.hatColor = '#ff0000'; // Hat color
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        
+        // Draw tank body
+        ctx.fillRect(this.x, this.y + 10, this.width, this.height - 10);
+        
+        // Draw tank treads
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(this.x, this.y + this.height - 5, this.width, 5);
+        ctx.fillRect(this.x, this.y + this.height - 10, this.width, 2);
+        
+        // Draw tank turret
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + 15, 15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw tank cannon
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(this.x + this.width / 2 - 3, this.y - 5, 6, 20);
+        
+        // Draw hat (cap)
+        ctx.fillStyle = this.hatColor;
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 - 15, this.y + 5);
+        ctx.lineTo(this.x + this.width / 2 + 15, this.y + 5);
+        ctx.lineTo(this.x + this.width / 2 + 20, this.y + 15);
+        ctx.lineTo(this.x + this.width / 2 - 20, this.y + 15);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw hat brim
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 - 20, this.y + 15);
+        ctx.lineTo(this.x + this.width / 2 + 20, this.y + 15);
+        ctx.lineTo(this.x + this.width / 2 + 25, this.y + 18);
+        ctx.lineTo(this.x + this.width / 2 - 25, this.y + 18);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    move() {
+        if (this.isMovingLeft) {
+            this.x = Math.max(0, this.x - this.speed);
+        }
+        if (this.isMovingRight) {
+            this.x = Math.min(canvas.width - this.width, this.x + this.speed);
+        }
+    }
+
+    shoot(currentTime) {
+        if (this.isShooting && currentTime - lastShootTime > SHOOT_COOLDOWN) {
+            for (let i = 0; i < shooters; i++) {
+                const offset = (i - (shooters - 1) / 2) * (this.width / (shooters + 1));
+                bullets.push(new Bullet(this.x + this.width / 2 + offset - BULLET_WIDTH / 2, this.y));
+            }
+            shootSound.play();
+            lastShootTime = currentTime;
+        }
+    }
+}
+
+class Bullet {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = BULLET_WIDTH;
+        this.height = BULLET_HEIGHT;
+        this.color = currentBulletColor;
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.shadowBlur = 0;
+    }
+
+    update() {
+        this.y -= BULLET_SPEED;
+    }
+}
+
+class Enemy {
+    constructor(isMoving = false, canDodge = false) {
+        this.width = Math.random() * 30 + 20;
+        this.height = this.width;
+        this.x = Math.random() * (canvas.width - this.width);
+        this.y = 0;
+        this.speed = Math.random() * 0.5 + 0.5 + (level >= 3 ? (Math.floor((level - 2) / 2) * 0.2) : 0);
+        this.health = isMoving ? Math.floor(level / 3) + 3 : Math.floor(Math.random() * 3) + 1 + Math.floor(level / 3);
+        this.isMoving = (gameDifficulty === 'hard' || gameDifficulty === 'superHard') && isMoving;
+        this.canDodge = gameDifficulty === 'superHard' && level >= 5 && Math.random() < 0.5;
+        this.dodgeSpeed = 3;
+        this.movementSpeed = 2;
+        this.movementDirection = Math.random() < 0.5 ? -1 : 1;
+        this.color = this.getRandomColor();
+        this.amplitude = Math.random() * 3 + 2; 
+        this.frequency = Math.random() * 0.02 + 0.01; 
+        this.angle = 0; 
+    }
+
+    getRandomColor() {
+        const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#8b00ff'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    drawRocket() {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        
+        const rotationAngle = Math.sin(this.angle) * 0.2;
+        ctx.rotate(rotationAngle);
+
+        // Draw rocket body
+        ctx.fillStyle = this.isMoving ? `rgb(255, 255, 0)` : this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -this.height / 2);
+        ctx.lineTo(this.width / 2, this.height / 2);
+        ctx.lineTo(-this.width / 2, this.height / 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw rocket fins
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.moveTo(-this.width / 2, this.height / 2);
+        ctx.lineTo(-this.width / 2 - 5, this.height / 2 + 10);
+        ctx.lineTo(-this.width / 2 + 5, this.height / 2 + 10);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(this.width / 2, this.height / 2);
+        ctx.lineTo(this.width / 2 + 5, this.height / 2 + 10);
+        ctx.lineTo(this.width / 2 - 5, this.height / 2 + 10);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw health bar
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-this.width / 2, -this.height / 2 - 10, this.width, 5);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(-this.width / 2, -this.height / 2 - 10, this.width * (this.health / (Math.floor(level / 3) + 3)), 5);
+
+        ctx.restore();
+    }
+
+    draw() {
+        this.drawRocket();
+    }
+
+    update() {
+        this.y += this.speed;
+        
+        if (gameDifficulty === 'hard' || gameDifficulty === 'superHard') {
+            this.x += Math.sin(this.angle) * this.amplitude;
+            this.angle += this.frequency;
+
+            if (this.isMoving && level >= 3) {
+                this.x += this.movementSpeed * this.movementDirection;
+                if (this.x <= 0 || this.x + this.width >= canvas.width) {
+                    this.movementDirection *= -1;
+                }
+            }
+
+            if (this.canDodge) {
+                this.dodgeBullets();
+            }
+
+            this.x = Math.max(0, Math.min(canvas.width - this.width, this.x));
+        }
+    }
+
+    dodgeBullets() {
+        const closestBullet = this.findClosestBullet();
+        if (closestBullet && this.y < closestBullet.y) {
+            const dodgeDirection = this.x < closestBullet.x ? -1 : 1;
+            this.x += this.dodgeSpeed * dodgeDirection;
+        }
+    }
+
+    findClosestBullet() {
+        return bullets.reduce((closest, bullet) => {
+            const distance = Math.sqrt(Math.pow(this.x - bullet.x, 2) + Math.pow(this.y - bullet.y, 2));
+            return (!closest || distance < closest.distance) ? { distance, bullet } : closest;
+        }, null)?.bullet;
+    }
+
+    explode() {
+        const particleCount = 30;
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle(this.x + this.width / 2, this.y + this.height / 2, this.color));
+        }
+    }
+}
+
+class PowerStar {
+    constructor() {
+        this.width = STAR_SIZE;
+        this.height = STAR_SIZE;
+        this.x = Math.random() * (canvas.width - this.width);
+        this.y = 0;
+        this.speed = STAR_SPEED;
+    }
+
+    draw() {
+        ctx.fillStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2, this.y);
+        for (let i = 0; i < 5; i++) {
+            ctx.lineTo(
+                this.x + this.width / 2 + this.width / 2 * Math.cos((i * 4 * Math.PI) / 5),
+                this.y + this.height / 2 + this.height / 2 * Math.sin((i * 4 * Math.PI) / 5)
+            );
+            ctx.lineTo(
+                this.x + this.width / 2 + this.width / 4 * Math.cos(((i * 4 + 2) * Math.PI) / 5),
+                this.y + this.height / 2 + this.height / 4 * Math.sin(((i * 4 + 2) * Math.PI) / 5)
+            );
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+}
+
+function getRandomNeonColor() {
+    const neonColors = [
+        '#00ffff',
+        '#ff00ff',
+        '#ffff00',
+        '#ff3333',
+        '#33ff33',
+        '#3333ff',
+    ];
+    return neonColors[Math.floor(Math.random() * neonColors.length)];
+}
+
+function init() {
+    player = new Player();
+    bullets = [];
+    enemies = [];
+    powerStars = [];
+    particles = [];
+    score = 0;
+    lives = 3;
+    level = 1;
+    shooters = 1;
+    gameIsOver = false;
+    lastEnemySpawnTime = 0;
+    lastShootTime = 0;
+    enemiesKilled = 0;
+    gameOverElement.style.display = 'none';
+    updateUI();
+    
+    gameHistory = [];
+    updateGameHistory();
+}
+
+function updateGameHistory() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    gameHistory.forEach((game, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <strong>Partida ${index + 1}</strong><br>
+            Puntaje: ${game.score}<br>
+            Nivel: ${game.level}<br>
+            Disparadores: ${game.shooters}<br>
+            Enemigos eliminados: ${game.enemiesKilled}
+        `;
+        historyList.appendChild(li);
+    });
+}
+
+function spawnEnemy() {
+    const isMoving = (gameDifficulty === 'hard' || gameDifficulty === 'superHard') && level >= 3 && Math.random() < 0.25;
+    const canDodge = gameDifficulty === 'superHard' && level >= 5 && Math.random() < 0.5;
+    enemies.push(new Enemy(isMoving, canDodge));
+}
+
+function spawnPowerStar() {
+    powerStars.push(new PowerStar());
+}
+
+function updateUI() {
+    livesElement.textContent = lives;
+    scoreElement.textContent = score;
+    levelElement.textContent = level;
+    shootersElement.textContent = shooters;
+
+    currentBulletColor = getRandomNeonColor(); 
+}
+
+function gameLoop(currentTime) {
+    if (gameState !== 'running' || isPaused) {
+        if (isPaused) {
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+        }
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    player.move();
+    player.shoot(currentTime);
+    player.draw();
+
+    if (score > 0 && score % 100 === 0 && powerStars.length === 0) {
+        spawnPowerStar();
+    }
+
+    const spawnInterval = Math.max(ENEMY_SPAWN_INTERVAL - (level - 1) * 100, 500);
+
+    if (currentTime - lastEnemySpawnTime > spawnInterval) {
+        const enemiesToSpawn = Math.min(Math.floor((level - 1) / 2) + 1, 5);
+        for (let i = 0; i < enemiesToSpawn; i++) {
+            spawnEnemy();
+        }
+        lastEnemySpawnTime = currentTime;
+    }
+
+    bullets.forEach((bullet, bulletIndex) => {
+        bullet.update();
+        bullet.draw();
+
+        if (bullet.y < 0) {
+            bullets.splice(bulletIndex, 1);
+        }
+    });
+
+    enemies.forEach((enemy, enemyIndex) => {
+        enemy.update();
+        enemy.draw();
+
+        if (enemy.y + enemy.height > canvas.height) {
+            enemies.splice(enemyIndex, 1);
+            lives--;
+            if (shooters > 1) {
+                shooters--;
+            }
+            updateUI();
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+
+        bullets.forEach((bullet, bulletIndex) => {
+            if (collision(bullet, enemy)) {
+                bullets.splice(bulletIndex, 1);
+                enemy.health--;
+                if (enemy.health <= 0) {
+                    enemy.explode();
+                    enemies.splice(enemyIndex, 1);
+                    score += enemy.isMoving ? 20 : 10;
+                    enemiesKilled++;
+                    updateUI();
+                    explosionSound.play();
+
+                    if (score % 100 === 0) {
+                        level++;
+                        updateUI();
+                        levelUpSound.play();
+                    }
+                }
+            }
+        });
+    });
+
+    powerStars.forEach((star, starIndex) => {
+        star.update();
+        star.draw();
+
+        if (collision(player, star)) {
+            powerStars.splice(starIndex, 1);
+            shooters++;
+            currentBulletColor = getRandomNeonColor(); 
+            updateUI();
+            powerUpSound.play();
+        }
+
+        if (star.y > canvas.height) {
+            powerStars.splice(starIndex, 1);
+        }
+    });
+
+    particles.forEach((particle, index) => {
+        particle.update();
+        particle.draw();
+        if (particle.life <= 0) {
+            particles.splice(index, 1);
+        }
+    });
+
+    requestAnimationFrame(gameLoop);
+}
+
+function collision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+function gameOver() {
+    gameIsOver = true;
+    gameOverElement.style.display = 'block';
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+    
+    gameHistory.unshift({
+        score: score,
+        level: level,
+        shooters: shooters,
+        enemiesKilled: enemiesKilled
+    });
+    
+    if (gameHistory.length > 10) {
+        gameHistory = gameHistory.slice(0, 10);
+    }
+    
+    updateGameHistory();
+}
+
+function initGame(difficulty) {
+    gameDifficulty = difficulty;
+    init();
+    gameState = 'running';
+    isPaused = false;
+    document.getElementById('startContainer').style.display = 'none';
+    pauseButton.style.display = 'inline-block';
+    pauseButton.textContent = 'Pausar';
+    requestAnimationFrame(gameLoop);
+    backgroundMusic.play();
+}
+
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = "block";
+}
+
+function closeAllModals() {
+    const modals = document.getElementsByClassName('modal');
+    for (let modal of modals) {
+        modal.style.display = "none";
+    }
+}
+
+document.getElementById('easyModalBtn').addEventListener('click', () => openModal('easyModal'));
+document.getElementById('hardModalBtn').addEventListener('click', () => openModal('hardModal'));
+document.getElementById('superHardModalBtn').addEventListener('click', () => openModal('superHardModal'));
+
+document.getElementById('easyButton').addEventListener('click', () => {
+    closeAllModals();
+    initGame('easy');
+});
+document.getElementById('hardButton').addEventListener('click', () => {
+    closeAllModals();
+    initGame('hard');
+});
+document.getElementById('superHardButton').addEventListener('click', () => {
+    closeAllModals();
+    initGame('superHard');
+});
+
+document.getElementById('pauseButton').addEventListener('click', () => {
+    if (gameState === 'running') {
+        isPaused = !isPaused;
+        if (isPaused) {
+            pauseButton.textContent = 'Reanudar';
+            backgroundMusic.pause();
+        } else {
+            pauseButton.textContent = 'Pausar';
+            backgroundMusic.play();
+        }
+    }
+});
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        closeAllModals();
+    }
+}
+
+restartButton.addEventListener('click', () => {
+    gameState = 'notStarted';
+    document.getElementById('startContainer').style.display = 'block';
+    pauseButton.style.display = 'none';
+    pauseButton.textContent = 'Pausar';
+    closeAllModals();
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+        player.isMovingLeft = true;
+    } else if (event.key === 'ArrowRight') {
+        player.isMovingRight = true;
+    } else if (event.key === ' ') {
+        player.isShooting = true;
+    }
+});
+
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft') {
+        player.isMovingLeft = false;
+    } else if (event.key === 'ArrowRight') {
+        player.isMovingRight = false;
+    } else if (event.key === ' ') {
+        player.isShooting = false;
+    }
+});
+
+fullscreenButton.addEventListener('click', toggleFullscreen);
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+            document.documentElement.msRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+        }
+    }
+}
+
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+function updateFullscreenButton() {
+    if (document.fullscreenElement) {
+        fullscreenButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M22 3.41L16.71 8.7 20 12h-8V4l3.29 3.29L20.59 2 22 3.41zM3.41 22l5.29-5.29L12 20v-8H4l3.29 3.29L2 20.59 3.41 22z" fill="currentColor"/></svg>';
+    } else {
+        fullscreenButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/></svg>';
+    }
+}
+
+const backgroundMusic = new Audio('https://example.com/background_music.mp3');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.5;
+
+const shootSound = new Audio('https://example.com/shoot.mp3');
+const explosionSound = new Audio('https://example.com/explosion.mp3');
+const levelUpSound = new Audio('https://example.com/level_up.mp3');
+const powerUpSound = new Audio('https://example.com/power_up.mp3');
+</script>
+</body></html>
